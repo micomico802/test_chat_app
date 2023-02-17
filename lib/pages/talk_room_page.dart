@@ -1,151 +1,121 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart' as intl;
+import 'package:test_chat_app/firestore/room_firestore.dart';
+import 'package:test_chat_app/model/talk_room.dart';
+import 'package:test_chat_app/utils/shared_pref.dart';
 
 import '../model/message.dart';
 
 class TalkRoomPage extends StatefulWidget {
-  final String name;
+  final TalkRoom talkRoom;
 
-  const TalkRoomPage(this.name, {Key? key}) : super(key: key);
+  const TalkRoomPage(this.talkRoom, {Key? key}) : super(key: key);
 
   @override
   State<TalkRoomPage> createState() => _TalkRoomPageState();
 }
 
 class _TalkRoomPageState extends State<TalkRoomPage> {
-  List<Message> msgList = [
-    Message(
-        message: 'ありがとうございます',
-        isMe: true,
-        sendTime: DateTime(2022, 1, 1, 1, 12, 0)),
-    Message(
-        message: 'いえいえ',
-        isMe: false,
-        sendTime: DateTime(2022, 1, 1, 1, 12, 50)),
-    Message(
-        message: 'よろ', isMe: true, sendTime: DateTime(2022, 1, 1, 1, 13, 09)),
-    Message(
-        message:
-            'sfshdfojh:adkfpj:dfjkapj:andfkzop:kdfkn]@:kpk:pz]k@dfknhpDFKkp@k}DF`hnp@kD}PKND',
-        isMe: true,
-        sendTime: DateTime(2022, 1, 1, 1, 13, 09)),
-    Message(
-        message:
-            'sfshdfojh:adkfpj:dfjkapj:andfkzop:kdfkn]@:kpk:pz]k@dfknhpDFKkp@k}DF`hnp@kD}PKND',
-        isMe: true,
-        sendTime: DateTime(2022, 1, 1, 1, 13, 09)),
-    Message(
-        message:
-            'sfshdfojh:adkfpj:dfjkapj:andfkzop:kdfkn]@:kpk:pz]k@dfknhpDFKkp@k}DF`hnp@kD}PKND',
-        isMe: true,
-        sendTime: DateTime(2022, 1, 1, 1, 13, 09)),
-    Message(
-        message:
-            'sfshdfojh:adkfpj:dfjkapj:andfkzop:kdfkn]@:kpk:pz]k@dfknhpDFKkp@k}DF`hnp@kD}PKND',
-        isMe: true,
-        sendTime: DateTime(2022, 1, 1, 1, 13, 09)),
-    Message(
-        message:
-            'sfshdfojh:adkfpj:dfjkapj:andfkzop:kdfkn]@:kpk:pz]k@dfknhpDFKkp@k}DF`hnp@kD}PKND',
-        isMe: true,
-        sendTime: DateTime(2022, 1, 1, 1, 13, 09)),
-    Message(
-        message:
-            'sfshdfojh:adkfpj:dfjkapj:andfkzop:kdfkn]@:kpk:pz]k@dfknhpDFKkp@k}DF`hnp@kD}PKND',
-        isMe: true,
-        sendTime: DateTime(2022, 1, 1, 1, 13, 09)),
-    Message(
-        message:
-            'sfshdfojh:adkfpj:dfjkapj:andfkzop:kdfkn]@:kpk:pz]k@dfknhpDFKkp@k}DF`hnp@kD}PKND',
-        isMe: true,
-        sendTime: DateTime(2022, 1, 1, 1, 13, 09)),
-    Message(
-        message:
-            'sfshdfojh:adkfpj:dfjkapj:andfkzop:kdfkn]@:kpk:pz]k@dfknhpDFKkp@k}DF`hnp@kD}PKND',
-        isMe: true,
-        sendTime: DateTime(2022, 1, 1, 1, 13, 09)),
-    Message(
-        message:
-            'sfshdfojh:adkfpj:dfjkapj:andfkzop:kdfkn]@:kpk:pz]k@dfknhpDFKkp@k}DF`hnp@kD}PKND',
-        isMe: true,
-        sendTime: DateTime(2022, 1, 1, 1, 13, 09)),
-    Message(
-        message:
-            'sfshdfojh:adkfpj:dfjkapj:andfkzop:kdfkn]@:kpk:pz]k@dfknhpDFKkp@k}DF`hnp@kD}PKND',
-        isMe: true,
-        sendTime: DateTime(2022, 1, 1, 1, 13, 09)),
-    Message(
-        message:
-            'sfshdfojh:adkfpj:dfjkapj:andfkzop:kdfkn]@:kpk:pz]k@dfknhpDFKkp@k}DF`hnp@kD}PKND',
-        isMe: true,
-        sendTime: DateTime(2022, 1, 1, 1, 13, 09)),
-  ];
+  TextEditingController controller = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         backgroundColor: Colors.lightBlueAccent,
         appBar: AppBar(
-          title: Text(widget.name),
+          title: Text(widget.talkRoom.talkUser.name),
         ),
         body: Stack(
-          alignment: Alignment.bottomCenter,
           children: [
-            Padding(
-              padding: const EdgeInsets.only(bottom: 60.0),
-              child: ListView.builder(
-                  physics: const RangeMaintainingScrollPhysics(),
-                  shrinkWrap: true,
-                  reverse: true,
-                  itemCount: msgList.length,
-                  itemBuilder: (context, index) {
+            StreamBuilder<QuerySnapshot>(
+                stream:
+                    RoomFirestore.fetchMessageSnapshot(widget.talkRoom.roomId),
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
                     return Padding(
-                      padding: EdgeInsets.only(top: 10.0, left: 10, right: 10, bottom: index == 0 ? 10 : 0),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        textDirection: msgList[index].isMe
-                            ? TextDirection.rtl
-                            : TextDirection.ltr,
-                        children: [
-                          Container(
-                              constraints: BoxConstraints(
-                                  maxWidth: MediaQuery.of(context).size.width * 0.6),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(16),
-                                color:
-                                    msgList[index].isMe ? Colors.green : Colors.white,
+                      padding: const EdgeInsets.only(bottom: 60.0),
+                      child: ListView.builder(
+                          physics: const RangeMaintainingScrollPhysics(),
+                          shrinkWrap: true,
+                          reverse: true,
+                          itemCount: snapshot.data!.docs.length,
+                          itemBuilder: (context, index) {
+                            final doc = snapshot.data!.docs[index];
+                            final Map<String, dynamic> data =
+                                doc.data() as Map<String, dynamic>;
+                            Message msg = Message(
+                                message: data['message'],
+                                isMe:
+                                    SharedPref.fetchUid() == data['sender_id'],
+                                sendTime: data['send_time']);
+                            return Padding(
+                              padding: EdgeInsets.only(
+                                  top: 10.0,
+                                  left: 10,
+                                  right: 10,
+                                  bottom: index == 0 ? 10 : 0),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                textDirection: msg.isMe
+                                    ? TextDirection.rtl
+                                    : TextDirection.ltr,
+                                children: [
+                                  Container(
+                                      constraints: BoxConstraints(
+                                          maxWidth: MediaQuery.of(context)
+                                                  .size
+                                                  .width *
+                                              0.6),
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(16),
+                                        color: msg.isMe
+                                            ? Colors.green
+                                            : Colors.white,
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 10, vertical: 6),
+                                      child: Text(msg.message)),
+                                  Text(intl.DateFormat('HH:mm')
+                                      .format(msg.sendTime.toDate())),
+                                ],
                               ),
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 6),
-                              child: Text(msgList[index].message)),
-                          Text(intl.DateFormat('HH:mm')
-                              .format(msgList[index].sendTime)),
-                        ],
-                      ),
+                            );
+                          }),
                     );
-                  }),
-            ),
+                  } else {
+                    return const Center(child: Text('メッセージがありません'));
+                  }
+                }),
             Column(
-              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 Container(
                   color: Colors.white,
                   height: 60,
                   child: Row(
                     children: [
-                      const Expanded(child: Padding(
+                      Expanded(
+                          child: Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: TextField(
-                          decoration: InputDecoration(
-                            contentPadding: EdgeInsets.only(left: 10),
-                            border: OutlineInputBorder()
-                          ),
+                          controller: controller,
+                          decoration: const InputDecoration(
+                              contentPadding: EdgeInsets.only(left: 10),
+                              border: OutlineInputBorder()),
                         ),
                       )),
                       IconButton(
-                          onPressed: (){},
-                          icon: const Icon(Icons.send)
-                      )
+                          onPressed: () async {
+                            print(controller.text);
+                            if(controller.text != ''){
+                              await RoomFirestore.sendMessage(
+                                  roomId: widget.talkRoom.roomId,
+                                  message: controller.text);
+                              controller.clear();
+                            }
+                          },
+                          icon: const Icon(Icons.send))
                     ],
                   ),
                 ),
