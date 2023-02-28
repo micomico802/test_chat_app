@@ -4,6 +4,8 @@ import 'package:test_chat_app/firestore/room_firestore.dart';
 import 'package:test_chat_app/pages/top_page.dart';
 import 'package:test_chat_app/utils/shared_pref.dart';
 import 'package:firebase_in_app_messaging/firebase_in_app_messaging.dart';
+import 'package:firebase_app_installations/firebase_app_installations.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
 
 import 'firebase_options.dart';
 import 'firestore/user_firestore.dart';
@@ -13,12 +15,15 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  await FirebaseAppCheck.instance.activate(
+    webRecaptchaSiteKey: '',
+  );
   await SharedPref.setPrefsInstance();
   String? uid = SharedPref.fetchUid();
-  if(uid == null)  await UserFirestore.createUser();
+  if (uid == null) await UserFirestore.createUser();
   print(uid);
-    runApp(const MyApp());
-
+  getFID();
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -34,4 +39,9 @@ class MyApp extends StatelessWidget {
       home: const TopPage(),
     );
   }
+}
+
+void getFID() async {
+  String id = await FirebaseInstallations.instance.getId();
+  print('id : $id');
 }
